@@ -1,0 +1,58 @@
+{
+  "source_repo": "eschan145/ci-bridge-fixture",
+  "checkout_path": "source",
+  "linux": {
+    "configure": [
+      "python3",
+      "-m",
+      "compileall",
+      "-q",
+      "source"
+    ],
+    "build": [
+      "python3",
+      "-m",
+      "compileall",
+      "-q",
+      "source"
+    ],
+    "test": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "source/tests",
+      "-t",
+      "source",
+      "-v"
+    ]
+  },
+  "windows": {
+    "configure": [
+      "python",
+      "-m",
+      "compileall",
+      "-q",
+      "source"
+    ],
+    "build": [
+      "python",
+      "-m",
+      "compileall",
+      "-q",
+      "source"
+    ],
+    "test": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "source/tests",
+      "-t",
+      "source",
+      "-v"
+    ]
+  }
+}
