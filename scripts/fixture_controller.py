@@ -37,14 +37,14 @@ def main():
             status(saved["sha"], "success" if conclusion == "success" else "failure",
                    f"Public Windows/Linux CI: {conclusion}", runs["html_url"])
             print(f"Completed: {saved['sha'][:8]} -> {conclusion}")
-            saved = {}
+            saved = {"completed": saved["sha"]}
         else:
             print(f"Still running {saved['run']}: {runs['status']}")
     sha = json.loads(gh(f"repos/{PRIVATE}/commits/main"))["sha"]
-    if saved and saved.get("sha") == sha:
+    if saved.get("completed") == sha or saved.get("sha") == sha:
         STATE.write_text(json.dumps(saved))
         return
-    if saved:
+    if saved.get("sha"):
         status(saved["sha"], "error", "Superseded by newer commit")
     if not saved and STATE.exists():
         completed = json.loads(STATE.read_text()).get("completed")
