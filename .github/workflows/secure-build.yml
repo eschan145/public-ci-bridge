@@ -1,0 +1,52 @@
+name: Encrypted source Windows Linux build
+on:
+  repository_dispatch:
+    types: [secure-build-v1]
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.event.action == 'secure-build-v1'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+          - os: windows-2025
+            platform: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate dispatch
+        shell: bash
+        env:
+          PROJECT: ${{ github.event.client_payload.project }}
+          SOURCE_SHA: ${{ github.event.client_payload.sha }}
+          RELEASE_TAG: ${{ github.event.client_payload.tag }}
+        run: |
+          python scripts/validate.py "$PROJECT" "$SOURCE_SHA"
+          python scripts/validate_tag.py "$RELEASE_TAG" "$PROJECT" "$SOURCE_SHA"
+      - name: Retrieve encrypted source bundle
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.client_payload.tag }}
+        run: gh release download "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" --pattern source.bin --output encrypted-source.bin
+      - name: Decrypt source
+        shell: bash
+        env:
+          SOURCE_ARCHIVE_KEY: ${{ secrets.SOURCE_ARCHIVE_KEY }}
+        run: |
+          python -m pip install --disable-pip-version-check cryptography
+          python scripts/secure_bundle.py unpack encrypted-source.bin source
+          python -c "from pathlib import Path; Path('encrypted-source.bin').unlink()"
+      - name: Build and test
+        shell: bash
+        env:
+          PROJECT: ${{ github.event.client_payload.project }}
+          SOURCE_SHA: ${{ github.event.client_payload.sha }}
+          PLATFORM: ${{ matrix.platform }}
+        run: python scripts/run_build.py "$PROJECT" "$SOURCE_SHA" "$PLATFORM"
