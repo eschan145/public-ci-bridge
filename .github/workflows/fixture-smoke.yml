@@ -1,0 +1,29 @@
+name: Fixture integration smoke test
+on:
+  repository_dispatch:
+    types: [fixture-smoke-v1]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            interpreter: python3
+          - os: windows-2025
+            interpreter: python
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate and test dispatched fixture snapshot
+        shell: bash
+        env:
+          SOURCE_DATA: ${{ github.event.client_payload.fixture_zip_b64 }}
+          SOURCE_SHA256: ${{ github.event.client_payload.fixture_zip_sha256 }}
+          PYTHON_CMD: ${{ matrix.interpreter }}
+        run: |
+          "$PYTHON_CMD" scripts/fixture_smoke.py
