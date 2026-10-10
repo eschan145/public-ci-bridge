@@ -1,0 +1,14 @@
+{
+  "source_repo": "YOUR_ORG/YOUR_PRIVATE_REPO",
+  "checkout_path": "source",
+  "linux": {
+    "configure": ["cmake", "-S", "source", "-B", "build", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=Release"],
+    "build": ["cmake", "--build", "build", "--parallel", "4"],
+    "test": ["ctest", "--test-dir", "build", "--output-on-failure"]
+  },
+  "windows": {
+    "configure": ["cmake", "-S", "source", "-B", "build", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=Release"],
+    "build": ["cmake", "--build", "build", "--parallel", "4"],
+    "test": ["ctest", "--test-dir", "build", "--output-on-failure"]
+  }
+}
